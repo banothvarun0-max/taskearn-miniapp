@@ -709,7 +709,7 @@ async function completeTask(task) {
   try {
 
     const response = await fetch(
-      "https://ezswtptpwfkxqfyduwmf.supabase.co/functions/v1/claim-task",
+      "https://ezswtptpwfkxqfyduwmf.supabase.co/functions/v1/super-processor",
       {
         method: "POST",
 
