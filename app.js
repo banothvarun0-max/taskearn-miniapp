@@ -16,6 +16,71 @@ if (tg) {
   tg.expand();
 }
 
+/* =====================================================
+   SUPABASE TELEGRAM AUTHENTICATION
+   ===================================================== */
+
+const SUPABASE_AUTH_URL =
+  "https://ezswtptpwfkxqfyduwmf.supabase.co/functions/v1/rapid-endpoint";
+
+let verifiedServerUser = null;
+
+async function authenticateWithSupabase() {
+
+  if (!tg || !tg.initData) {
+    console.warn("TaskEarn: Telegram initData is not available.");
+    return null;
+  }
+
+  try {
+
+    const response = await fetch(
+      SUPABASE_AUTH_URL,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          initData: tg.initData
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "Telegram authentication failed"
+      );
+    }
+
+    if (!data.success || !data.user) {
+      throw new Error("Invalid authentication response");
+    }
+
+    verifiedServerUser = data.user;
+
+    console.log(
+      "TaskEarn: Telegram user verified by Supabase.",
+      verifiedServerUser.telegram_id
+    );
+
+    return verifiedServerUser;
+
+  } catch (error) {
+
+    console.error(
+      "TaskEarn: Supabase authentication error:",
+      error
+    );
+
+    return null;
+  }
+}
+
 
 /* =====================================================
    TASK DATA
@@ -997,7 +1062,7 @@ if (dailyButton) {
    INITIALIZE
    ===================================================== */
 
-function init() {
+async function init() {
 
   setupProfile();
 
@@ -1010,6 +1075,8 @@ function init() {
   renderHomeTasks();
 
   renderHistory();
+
+  await authenticateWithSupabase();
 
 }
 
