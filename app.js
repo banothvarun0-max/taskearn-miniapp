@@ -699,53 +699,94 @@ function handleTask(taskId) {
    COMPLETE TASK
    ===================================================== */
 
-function completeTask(task) {
+async function completeTask(task) {
 
-  completedTasks.push(
-    task.id
-  );
-
-
-  coins +=
-    task.reward;
-
-
-  addHistory(
-    task.title,
-    task.reward,
-    task.icon
-  );
-
-
-  saveData();
-
-  updateBalance();
-
-  renderTasks();
-
-  renderHomeTasks();
-
-  renderHistory();
-
-
-  if (tg) {
-
-    tg.HapticFeedback
-      ?.notificationOccurred(
-        "success"
-      );
-
+  if (!verifiedServerUser) {
+    alert("Please wait for Telegram authentication to finish.");
+    return;
   }
 
+  try {
 
-  alert(
-    "Task completed!\n\n+" +
-    task.reward +
-    " points 🪙"
-  );
+    const response = await fetch(
+      "https://ezswtptpwfkxqfyduwmf.supabase.co/functions/v1/claim-task",
+      {
+        method: "POST",
 
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          initData: tg.initData,
+          taskSlug: task.id
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data?.error || "Task claim failed"
+      );
+    }
+
+    if (!data.success) {
+
+      alert(
+        data.message ||
+        "This task cannot be claimed right now."
+      );
+
+      return;
+    }
+
+    /*
+      Server is now the source of truth.
+    */
+
+    coins = Number(data.new_balance) || 0;
+
+    completedTasks.push(task.id);
+
+    addHistory(
+      task.title,
+      task.reward,
+      task.icon
+    );
+
+    saveData();
+
+    updateBalance();
+    renderTasks();
+    renderHomeTasks();
+    renderHistory();
+
+    if (tg) {
+      tg.HapticFeedback
+        ?.notificationOccurred("success");
+    }
+
+    alert(
+      "Task completed!\n\n+" +
+      task.reward +
+      " points 🪙"
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Task claim error:",
+      error
+    );
+
+    alert(
+      "Unable to claim this task right now.\n\n" +
+      "Please try again."
+    );
+  }
 }
-
 
 /* =====================================================
    HISTORY
