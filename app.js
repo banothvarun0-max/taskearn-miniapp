@@ -63,6 +63,15 @@ async function authenticateWithSupabase() {
 
     verifiedServerUser = data.user;
 
+coins = Number(data.user.points_balance) || 0;
+
+updateBalance();
+
+console.log(
+  "TaskEarn: Server balance loaded:",
+  coins
+);
+
     console.log(
       "TaskEarn: Telegram user verified by Supabase.",
       verifiedServerUser.telegram_id
