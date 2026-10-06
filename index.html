@@ -1,1 +1,428 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>TaskEarn</title> <link rel="stylesheet" href="style.css"> <!-- Telegram Mini App SDK --> <script src="https://telegram.org/js/telegram-web-app.js"></script> </head> <body> <div class="app"> <!-- HEADER --> <header class="header"> <div> <div class="logo">TaskEarn</div> <div class="welcome" id="welcomeText">Welcome 👋</div> </div> <div class="balance-box"> <span>🪙</span> <span id="headerCoins">0</span> </div> </header> <!-- HOME --> <section id="homePage" class="page active"> <div class="hero-card"> <div> <p class="small-title">YOUR BALANCE</p> <h1><span id="homeCoins">0</span> 🪙</h1> <p>Complete tasks and collect points.</p> </div> </div> <button class="daily-card" id="dailyBonusBtn"> <div class="daily-icon">🎁</div> <div class="daily-info"> <strong>Daily Bonus</strong> <span id="dailyStatus">Claim your daily bonus</span> </div> <div class="bonus-value">+100</div> </button> <div class="section-title"> <h2>Featured Tasks</h2> <button onclick="showPage('tasksPage')">View all</button> </div> <div id="homeTasks"></div> </section> <!-- TASKS --> <section id="tasksPage" class="page"> <div class="page-heading"> <h1>🎯 Tasks</h1> <p>Complete tasks to earn points.</p> </div> <div id="tasksContainer"></div> </section> <!-- REWARDS --> <section id="rewardsPage" class="page"> <div class="page-heading"> <h1>🎁 Rewards</h1> <p>Your points can be used for eligible rewards.</p> </div> <div class="reward-balance"> <span>Your Points</span> <strong><span id="rewardCoins">0</span> 🪙</strong> </div> <div class="reward-card"> <div class="reward-icon">🎁</div> <div> <h3>Coming Soon</h3> <p>Reward redemption will be available in a future version.</p> </div> </div> <div class="notice"> ℹ️ Points shown in this demo are virtual points. Real rewards require a verified reward system. </div> </section> <!-- PROFILE --> <section id="profilePage" class="page"> <div class="profile-header"> <div class="avatar" id="avatar"> 👤 </div> <h2 id="profileName">Telegram User</h2> <p id="profileUsername">@username</p> </div> <div class="stats"> <div class="stat"> <strong id="profileCoins">0</strong> <span>Points</span> </div> <div class="stat"> <strong id="completedCount">0</strong> <span>Completed</span> </div> </div> <div class="profile-option"> <span>🔥 Current Streak</span> <strong id="streakValue">0 days</strong> </div> <div class="profile-option"> <span>📱 Telegram Mini App</span> <strong>TaskEarn</strong> </div> </section> <!-- BOTTOM NAVIGATION --> <nav class="bottom-nav"> <button class="nav-btn active" data-page="homePage" onclick="showPage('homePage')"> <span>🏠</span> <small>Home</small> </button> <button class="nav-btn" data-page="tasksPage" onclick="showPage('tasksPage')"> <span>🎯</span> <small>Tasks</small> </button> <button class="nav-btn" data-page="rewardsPage" onclick="showPage('rewardsPage')"> <span>🎁</span> <small>Rewards</small> </button> <button class="nav-btn" data-page="profilePage" onclick="showPage('profilePage')"> <span>👤</span> <small>Profile</small> </button> </nav> </div> <script src="app.js"></script> </body> </html> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+  <title>TaskEarn</title>
+
+  <link rel="stylesheet" href="style.css">
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+
+    <div>
+      <div class="logo">TaskEarn</div>
+      <div class="welcome" id="welcomeText">
+        Welcome 👋
+      </div>
+    </div>
+
+    <div class="balance-box">
+      🪙
+      <span id="headerCoins">0</span>
+    </div>
+
+  </header>
+
+
+  <!-- HOME -->
+  <section id="homePage" class="page active">
+
+    <div class="hero-card">
+
+      <p class="small-title">
+        YOUR BALANCE
+      </p>
+
+      <h1>
+        <span id="homeCoins">0</span> 🪙
+      </h1>
+
+      <p>
+        Complete verified tasks and earn points.
+      </p>
+
+    </div>
+
+
+    <!-- DAILY BONUS -->
+    <button
+      class="daily-card"
+      id="dailyBonusBtn">
+
+      <div class="daily-icon">
+        🎁
+      </div>
+
+      <div class="daily-info">
+
+        <strong>
+          Daily Bonus
+        </strong>
+
+        <span id="dailyStatus">
+          Claim your daily bonus
+        </span>
+
+      </div>
+
+      <div class="bonus-value">
+        +100
+      </div>
+
+    </button>
+
+
+    <!-- STREAK -->
+    <div class="streak-card">
+
+      <div class="streak-icon">
+        🔥
+      </div>
+
+      <div>
+        <strong>
+          <span id="homeStreak">0</span> Day Streak
+        </strong>
+
+        <p>
+          Keep coming back every day.
+        </p>
+      </div>
+
+    </div>
+
+
+    <!-- TASK TITLE -->
+    <div class="section-title">
+
+      <h2>
+        Today's Tasks
+      </h2>
+
+      <button onclick="showPage('tasksPage')">
+        View all
+      </button>
+
+    </div>
+
+
+    <div id="homeTasks"></div>
+
+  </section>
+
+
+  <!-- TASKS -->
+  <section
+    id="tasksPage"
+    class="page">
+
+    <div class="page-heading">
+
+      <h1>
+        🎯 Tasks
+      </h1>
+
+      <p>
+        Complete eligible tasks to collect points.
+      </p>
+
+    </div>
+
+
+    <!-- TASK FILTER -->
+    <div class="task-tabs">
+
+      <button
+        class="task-tab active"
+        onclick="filterTasks('available', this)">
+        Available
+      </button>
+
+      <button
+        class="task-tab"
+        onclick="filterTasks('completed', this)">
+        Completed
+      </button>
+
+    </div>
+
+
+    <div id="tasksContainer"></div>
+
+  </section>
+
+
+  <!-- HISTORY -->
+  <section
+    id="historyPage"
+    class="page">
+
+    <div class="page-heading">
+
+      <h1>
+        📊 History
+      </h1>
+
+      <p>
+        Your recent point activity.
+      </p>
+
+    </div>
+
+
+    <div id="historyContainer"></div>
+
+  </section>
+
+
+  <!-- REWARDS -->
+  <section
+    id="rewardsPage"
+    class="page">
+
+    <div class="page-heading">
+
+      <h1>
+        🎁 Rewards
+      </h1>
+
+      <p>
+        Redeem points when you meet the requirements.
+      </p>
+
+    </div>
+
+
+    <div class="reward-balance">
+
+      <span>
+        Your Points
+      </span>
+
+      <strong>
+        <span id="rewardCoins">0</span> 🪙
+      </strong>
+
+    </div>
+
+
+    <div class="reward-card">
+
+      <div class="reward-icon">
+        💰
+      </div>
+
+      <div>
+
+        <h3>
+          Rewards coming soon
+        </h3>
+
+        <p>
+          Real-money rewards will only be enabled
+          after a secure and verified reward system
+          is available.
+        </p>
+
+      </div>
+
+    </div>
+
+
+    <div class="notice">
+
+      🛡️ Your points are virtual points.
+      Task completion and reward eligibility
+      will be verified before real rewards are enabled.
+
+    </div>
+
+  </section>
+
+
+  <!-- PROFILE -->
+  <section
+    id="profilePage"
+    class="page">
+
+    <div class="profile-header">
+
+      <div
+        class="avatar"
+        id="avatar">
+
+        👤
+
+      </div>
+
+      <h2 id="profileName">
+        Telegram User
+      </h2>
+
+      <p id="profileUsername">
+        @username
+      </p>
+
+    </div>
+
+
+    <div class="stats">
+
+      <div class="stat">
+
+        <strong id="profileCoins">
+          0
+        </strong>
+
+        <span>
+          Points
+        </span>
+
+      </div>
+
+
+      <div class="stat">
+
+        <strong id="completedCount">
+          0
+        </strong>
+
+        <span>
+          Tasks
+        </span>
+
+      </div>
+
+
+      <div class="stat">
+
+        <strong id="profileStreak">
+          0
+        </strong>
+
+        <span>
+          Streak
+        </span>
+
+      </div>
+
+    </div>
+
+
+    <div class="profile-option">
+
+      <span>
+        🔥 Current Streak
+      </span>
+
+      <strong id="streakValue">
+        0 days
+      </strong>
+
+    </div>
+
+
+    <div class="profile-option">
+
+      <span>
+        🪙 Total Points
+      </span>
+
+      <strong id="profileTotal">
+        0
+      </strong>
+
+    </div>
+
+
+    <div class="profile-option">
+
+      <span>
+        🛡️ Account
+      </span>
+
+      <strong>
+        Telegram
+      </strong>
+
+    </div>
+
+  </section>
+
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+
+    <button
+      class="nav-btn active"
+      data-page="homePage"
+      onclick="showPage('homePage')">
+
+      <span>🏠</span>
+      <small>Home</small>
+
+    </button>
+
+
+    <button
+      class="nav-btn"
+      data-page="tasksPage"
+      onclick="showPage('tasksPage')">
+
+      <span>🎯</span>
+      <small>Tasks</small>
+
+    </button>
+
+
+    <button
+      class="nav-btn"
+      data-page="historyPage"
+      onclick="showPage('historyPage')">
+
+      <span>📊</span>
+      <small>History</small>
+
+    </button>
+
+
+    <button
+      class="nav-btn"
+      data-page="rewardsPage"
+      onclick="showPage('rewardsPage')">
+
+      <span>🎁</span>
+      <small>Rewards</small>
+
+    </button>
+
+
+    <button
+      class="nav-btn"
+      data-page="profilePage"
+      onclick="showPage('profilePage')">
+
+      <span>👤</span>
+      <small>Profile</small>
+
+    </button>
+
+  </nav>
+
+</div>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>

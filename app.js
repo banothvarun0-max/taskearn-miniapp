@@ -1,7 +1,7 @@
-```javascript
 /* =====================================================
-   TASKEARN
-   FRONTEND-ONLY TELEGRAM MINI APP
+   TASKEARN V2
+   TELEGRAM MINI APP
+   FRONTEND DEMO
    ===================================================== */
 
 
@@ -18,55 +18,78 @@ if (tg) {
 
 
 /* =====================================================
-   DATA
+   TASK DATA
    ===================================================== */
 
 const tasks = [
+
   {
-    id: "task1",
-    icon: "📺",
-    title: "Watch Demo",
-    description: "Watch the demo content.",
-    reward: 50
-  },
-  {
-    id: "task2",
-    icon: "📱",
-    title: "Try a Feature",
-    description: "Explore a featured app section.",
-    reward: 75
-  },
-  {
-    id: "task3",
+    id: "daily-challenge",
     icon: "🎯",
     title: "Daily Challenge",
-    description: "Complete today's challenge.",
-    reward: 100
+    description: "Complete today's simple challenge.",
+    reward: 100,
+    type: "daily"
   },
+
   {
-    id: "task4",
+    id: "watch-ad",
+    icon: "📺",
+    title: "Watch Rewarded Ad",
+    description: "Available when a supported ad provider is connected.",
+    reward: 25,
+    type: "ad"
+  },
+
+  {
+    id: "featured-task",
     icon: "⭐",
     title: "Featured Task",
-    description: "Check today's featured content.",
-    reward: 150
+    description: "Try today's featured activity.",
+    reward: 75,
+    type: "featured"
+  },
+
+  {
+    id: "quiz-task",
+    icon: "🧠",
+    title: "Quick Quiz",
+    description: "Answer a short question.",
+    reward: 50,
+    type: "quiz"
   }
+
 ];
 
 
 /* =====================================================
-   LOCAL STORAGE
+   LOCAL DATA
    ===================================================== */
 
-let coins = Number(localStorage.getItem("taskEarnCoins")) || 0;
+let coins =
+  Number(localStorage.getItem("taskEarnCoins")) || 0;
+
 
 let completedTasks =
-  JSON.parse(localStorage.getItem("taskEarnCompleted")) || [];
+  JSON.parse(
+    localStorage.getItem("taskEarnCompleted")
+  ) || [];
+
+
+let history =
+  JSON.parse(
+    localStorage.getItem("taskEarnHistory")
+  ) || [];
+
 
 let lastDaily =
   localStorage.getItem("taskEarnDaily") || "";
 
+
 let streak =
-  Number(localStorage.getItem("taskEarnStreak")) || 0;
+  Number(
+    localStorage.getItem("taskEarnStreak")
+  ) || 0;
 
 
 /* =====================================================
@@ -80,14 +103,17 @@ function getTelegramUser() {
     tg.initDataUnsafe &&
     tg.initDataUnsafe.user
   ) {
+
     return tg.initDataUnsafe.user;
+
   }
 
   return null;
 }
 
 
-const telegramUser = getTelegramUser();
+const telegramUser =
+  getTelegramUser();
 
 
 /* =====================================================
@@ -96,7 +122,7 @@ const telegramUser = getTelegramUser();
 
 function setupProfile() {
 
-  const welcomeText =
+  const welcome =
     document.getElementById("welcomeText");
 
   const profileName =
@@ -109,66 +135,68 @@ function setupProfile() {
     document.getElementById("avatar");
 
 
-  if (telegramUser) {
+  if (!telegramUser) {
 
-    const name =
-      telegramUser.first_name ||
-      "Telegram User";
+    welcome.textContent =
+      "Welcome 👋";
 
-    welcomeText.textContent =
-      "Hi, " + name + " 👋";
-
-    profileName.textContent =
-      name;
-
-    if (telegramUser.username) {
-
-      profileUsername.textContent =
-        "@" + telegramUser.username;
-
-    } else {
-
-      profileUsername.textContent =
-        "Telegram user";
-
-    }
-
-    if (telegramUser.photo_url) {
-
-      avatar.innerHTML =
-        `<img src="${telegramUser.photo_url}"
-              style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-
-    }
+    return;
 
   }
 
-}
+
+  const name =
+    telegramUser.first_name ||
+    "Telegram User";
 
 
-/* =====================================================
-   UPDATE BALANCE
-   ===================================================== */
+  welcome.textContent =
+    "Hi, " + name + " 👋";
 
-function updateBalance() {
 
-  document.getElementById("headerCoins").textContent =
-    coins;
+  profileName.textContent =
+    name;
 
-  document.getElementById("homeCoins").textContent =
-    coins;
 
-  document.getElementById("rewardCoins").textContent =
-    coins;
+  if (telegramUser.username) {
 
-  document.getElementById("profileCoins").textContent =
-    coins;
+    profileUsername.textContent =
+      "@" + telegramUser.username;
 
-  document.getElementById("completedCount").textContent =
-    completedTasks.length;
+  } else {
 
-  document.getElementById("streakValue").textContent =
-    streak + " days";
+    profileUsername.textContent =
+      "Telegram user";
+
+  }
+
+
+  if (telegramUser.photo_url) {
+
+    avatar.innerHTML = "";
+
+    const img =
+      document.createElement("img");
+
+    img.src =
+      telegramUser.photo_url;
+
+    img.style.width =
+      "100%";
+
+    img.style.height =
+      "100%";
+
+    img.style.objectFit =
+      "cover";
+
+    img.style.borderRadius =
+      "50%";
+
+    avatar.appendChild(img);
+
+  }
+
 }
 
 
@@ -183,15 +211,24 @@ function saveData() {
     coins
   );
 
+
   localStorage.setItem(
     "taskEarnCompleted",
     JSON.stringify(completedTasks)
   );
 
+
+  localStorage.setItem(
+    "taskEarnHistory",
+    JSON.stringify(history)
+  );
+
+
   localStorage.setItem(
     "taskEarnDaily",
     lastDaily
   );
+
 
   localStorage.setItem(
     "taskEarnStreak",
@@ -202,7 +239,102 @@ function saveData() {
 
 
 /* =====================================================
-   RENDER TASK
+   BALANCE
+   ===================================================== */
+
+function updateBalance() {
+
+  const elements = {
+
+    headerCoins:
+      document.getElementById("headerCoins"),
+
+    homeCoins:
+      document.getElementById("homeCoins"),
+
+    rewardCoins:
+      document.getElementById("rewardCoins"),
+
+    profileCoins:
+      document.getElementById("profileCoins"),
+
+    profileTotal:
+      document.getElementById("profileTotal"),
+
+    completedCount:
+      document.getElementById("completedCount"),
+
+    streakValue:
+      document.getElementById("streakValue"),
+
+    homeStreak:
+      document.getElementById("homeStreak"),
+
+    profileStreak:
+      document.getElementById("profileStreak")
+
+  };
+
+
+  if (elements.headerCoins)
+    elements.headerCoins.textContent = coins;
+
+
+  if (elements.homeCoins)
+    elements.homeCoins.textContent = coins;
+
+
+  if (elements.rewardCoins)
+    elements.rewardCoins.textContent = coins;
+
+
+  if (elements.profileCoins)
+    elements.profileCoins.textContent = coins;
+
+
+  if (elements.profileTotal)
+    elements.profileTotal.textContent = coins;
+
+
+  if (elements.completedCount)
+    elements.completedCount.textContent =
+      completedTasks.length;
+
+
+  if (elements.streakValue)
+    elements.streakValue.textContent =
+      streak + " days";
+
+
+  if (elements.homeStreak)
+    elements.homeStreak.textContent =
+      streak;
+
+
+  if (elements.profileStreak)
+    elements.profileStreak.textContent =
+      streak;
+
+}
+
+
+/* =====================================================
+   DATE
+   ===================================================== */
+
+function getToday() {
+
+  const date =
+    new Date();
+
+  return date.toISOString()
+    .split("T")[0];
+
+}
+
+
+/* =====================================================
+   TASK HTML
    ===================================================== */
 
 function createTaskHTML(task) {
@@ -210,7 +342,37 @@ function createTaskHTML(task) {
   const completed =
     completedTasks.includes(task.id);
 
+
+  let buttonText =
+    completed
+      ? "✓ Completed"
+      : "Complete Task";
+
+
+  /*
+    The rewarded-ad task is intentionally
+    disabled until a real supported provider
+    is connected.
+  */
+
+  if (
+    task.type === "ad" &&
+    !completed
+  ) {
+
+    buttonText =
+      "Coming Soon";
+
+  }
+
+
+  const disabled =
+    completed ||
+    task.type === "ad";
+
+
   return `
+
     <div class="task-card">
 
       <div class="task-top">
@@ -219,13 +381,19 @@ function createTaskHTML(task) {
           ${task.icon}
         </div>
 
+
         <div class="task-info">
 
-          <h3>${task.title}</h3>
+          <h3>
+            ${task.title}
+          </h3>
 
-          <p>${task.description}</p>
+          <p>
+            ${task.description}
+          </p>
 
         </div>
+
 
         <div class="task-reward">
           +${task.reward}
@@ -233,30 +401,128 @@ function createTaskHTML(task) {
 
       </div>
 
+
       <button
-        class="task-button ${completed ? "completed" : ""}"
-        onclick="completeTask('${task.id}')"
-        ${completed ? "disabled" : ""}
+        class="task-button ${
+          completed ? "completed" : ""
+        }"
+        onclick="handleTask('${task.id}')"
+        ${disabled ? "disabled" : ""}
       >
-        ${completed ? "✓ Completed" : "Complete Task"}
+
+        ${buttonText}
+
       </button>
 
     </div>
+
   `;
+
 }
 
 
 /* =====================================================
-   RENDER ALL TASKS
+   TASK FILTER
+   ===================================================== */
+
+let currentTaskFilter =
+  "available";
+
+
+function filterTasks(
+  filter,
+  button
+) {
+
+  currentTaskFilter =
+    filter;
+
+
+  document
+    .querySelectorAll(".task-tab")
+    .forEach(tab => {
+
+      tab.classList.remove("active");
+
+    });
+
+
+  if (button) {
+
+    button.classList.add("active");
+
+  }
+
+
+  renderTasks();
+
+}
+
+
+/* =====================================================
+   RENDER TASKS
    ===================================================== */
 
 function renderTasks() {
 
   const container =
-    document.getElementById("tasksContainer");
+    document.getElementById(
+      "tasksContainer"
+    );
+
+
+  if (!container)
+    return;
+
+
+  let visibleTasks;
+
+
+  if (
+    currentTaskFilter ===
+    "completed"
+  ) {
+
+    visibleTasks =
+      tasks.filter(task =>
+        completedTasks.includes(task.id)
+      );
+
+  } else {
+
+    visibleTasks =
+      tasks.filter(task =>
+        !completedTasks.includes(task.id)
+      );
+
+  }
+
+
+  if (visibleTasks.length === 0) {
+
+    container.innerHTML = `
+
+      <div class="empty-history">
+
+        ${
+          currentTaskFilter === "completed"
+            ? "No completed tasks yet."
+            : "You've completed all available tasks."
+        }
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
 
   container.innerHTML =
-    tasks.map(createTaskHTML).join("");
+    visibleTasks
+      .map(createTaskHTML)
+      .join("");
 
 }
 
@@ -268,13 +534,98 @@ function renderTasks() {
 function renderHomeTasks() {
 
   const container =
-    document.getElementById("homeTasks");
+    document.getElementById(
+      "homeTasks"
+    );
+
+
+  if (!container)
+    return;
+
+
+  const available =
+    tasks
+      .filter(task =>
+        !completedTasks.includes(task.id)
+      )
+      .slice(0, 3);
+
+
+  if (available.length === 0) {
+
+    container.innerHTML = `
+
+      <div class="empty-history">
+
+        🎉 All today's tasks are completed!
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
 
   container.innerHTML =
-    tasks
-      .slice(0, 2)
+    available
       .map(createTaskHTML)
       .join("");
+
+}
+
+
+/* =====================================================
+   HANDLE TASK
+   ===================================================== */
+
+function handleTask(taskId) {
+
+  const task =
+    tasks.find(
+      item => item.id === taskId
+    );
+
+
+  if (!task)
+    return;
+
+
+  if (
+    completedTasks.includes(taskId)
+  ) {
+
+    return;
+
+  }
+
+
+  /*
+    Rewarded advertisements must NOT
+    be rewarded from this client-side
+    function.
+
+    A real ad provider must confirm
+    completion first.
+  */
+
+  if (
+    task.type === "ad"
+  ) {
+
+    alert(
+      "Rewarded ads are not connected yet.\n\n" +
+      "We will connect a supported provider " +
+      "after the secure reward system is ready."
+    );
+
+    return;
+
+  }
+
+
+  completeTask(task);
 
 }
 
@@ -283,32 +634,23 @@ function renderHomeTasks() {
    COMPLETE TASK
    ===================================================== */
 
-function completeTask(taskId) {
+function completeTask(task) {
 
-  if (completedTasks.includes(taskId)) {
-    return;
-  }
-
-  const task =
-    tasks.find(t => t.id === taskId);
-
-  if (!task) {
-    return;
-  }
+  completedTasks.push(
+    task.id
+  );
 
 
-  /*
-     DEMO ONLY
-
-     In the real version, this reward should
-     only be given after an advertising/offer
-     provider confirms completion.
-  */
+  coins +=
+    task.reward;
 
 
-  completedTasks.push(taskId);
+  addHistory(
+    task.title,
+    task.reward,
+    task.icon
+  );
 
-  coins += task.reward;
 
   saveData();
 
@@ -318,16 +660,149 @@ function completeTask(taskId) {
 
   renderHomeTasks();
 
+  renderHistory();
+
 
   if (tg) {
-    tg.HapticFeedback?.notificationOccurred("success");
+
+    tg.HapticFeedback
+      ?.notificationOccurred(
+        "success"
+      );
+
   }
+
 
   alert(
     "Task completed!\n\n+" +
     task.reward +
     " points 🪙"
   );
+
+}
+
+
+/* =====================================================
+   HISTORY
+   ===================================================== */
+
+function addHistory(
+  title,
+  points,
+  icon
+) {
+
+  history.unshift({
+
+    title: title,
+
+    points: points,
+
+    icon: icon,
+
+    date: new Date()
+      .toISOString()
+
+  });
+
+
+  /*
+    Keep only latest 50 records.
+  */
+
+  history =
+    history.slice(0, 50);
+
+}
+
+
+/* =====================================================
+   RENDER HISTORY
+   ===================================================== */
+
+function renderHistory() {
+
+  const container =
+    document.getElementById(
+      "historyContainer"
+    );
+
+
+  if (!container)
+    return;
+
+
+  if (history.length === 0) {
+
+    container.innerHTML = `
+
+      <div class="empty-history">
+
+        📊 No activity yet.<br><br>
+
+        Complete your first task
+        to see your history here.
+
+      </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+    history.map(item => {
+
+      const date =
+        new Date(item.date);
+
+
+      const formatted =
+        date.toLocaleString(
+          [],
+          {
+            day: "2-digit",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit"
+          }
+        );
+
+
+      return `
+
+        <div class="history-card">
+
+          <div class="history-icon">
+            ${item.icon}
+          </div>
+
+
+          <div class="history-info">
+
+            <strong>
+              ${item.title}
+            </strong>
+
+            <span>
+              ${formatted}
+            </span>
+
+          </div>
+
+
+          <div class="history-points">
+            +${item.points}
+          </div>
+
+        </div>
+
+      `;
+
+    }).join("");
+
 }
 
 
@@ -335,34 +810,41 @@ function completeTask(taskId) {
    DAILY BONUS
    ===================================================== */
 
-function getToday() {
-
-  const date = new Date();
-
-  return date.toISOString().split("T")[0];
-
-}
-
-
 function claimDailyBonus() {
 
-  const today = getToday();
+  const today =
+    getToday();
 
-  if (lastDaily === today) {
+
+  if (
+    lastDaily === today
+  ) {
 
     alert(
       "You already claimed today's bonus."
     );
 
     return;
+
   }
 
 
   coins += 100;
 
-  lastDaily = today;
+
+  lastDaily =
+    today;
+
 
   streak++;
+
+
+  addHistory(
+    "Daily Bonus",
+    100,
+    "🎁"
+  );
+
 
   saveData();
 
@@ -370,25 +852,50 @@ function claimDailyBonus() {
 
   updateDailyButton();
 
+  renderHistory();
+
 
   if (tg) {
-    tg.HapticFeedback?.notificationOccurred("success");
+
+    tg.HapticFeedback
+      ?.notificationOccurred(
+        "success"
+      );
+
   }
 
+
   alert(
-    "Daily bonus claimed!\n\n+100 points 🪙"
+    "Daily bonus claimed!\n\n" +
+    "+100 points 🪙"
   );
+
 }
 
 
+/* =====================================================
+   DAILY BUTTON
+   ===================================================== */
+
 function updateDailyButton() {
 
-  const today = getToday();
-
   const status =
-    document.getElementById("dailyStatus");
+    document.getElementById(
+      "dailyStatus"
+    );
 
-  if (lastDaily === today) {
+
+  if (!status)
+    return;
+
+
+  const today =
+    getToday();
+
+
+  if (
+    lastDaily === today
+  ) {
 
     status.textContent =
       "Already claimed today ✓";
@@ -397,6 +904,7 @@ function updateDailyButton() {
 
     status.textContent =
       "Claim your daily bonus";
+
   }
 
 }
@@ -412,16 +920,25 @@ function showPage(pageId) {
     .querySelectorAll(".page")
     .forEach(page => {
 
-      page.classList.remove("active");
+      page.classList.remove(
+        "active"
+      );
 
     });
 
 
   const page =
-    document.getElementById(pageId);
+    document.getElementById(
+      pageId
+    );
+
 
   if (page) {
-    page.classList.add("active");
+
+    page.classList.add(
+      "active"
+    );
+
   }
 
 
@@ -429,13 +946,19 @@ function showPage(pageId) {
     .querySelectorAll(".nav-btn")
     .forEach(button => {
 
-      button.classList.remove("active");
+      button.classList.remove(
+        "active"
+      );
+
 
       if (
-        button.dataset.page === pageId
+        button.dataset.page ===
+        pageId
       ) {
 
-        button.classList.add("active");
+        button.classList.add(
+          "active"
+        );
 
       }
 
@@ -451,15 +974,23 @@ function showPage(pageId) {
 
 
 /* =====================================================
-   DAILY BONUS BUTTON
+   DAILY BUTTON EVENT
    ===================================================== */
 
-document
-  .getElementById("dailyBonusBtn")
-  .addEventListener(
+const dailyButton =
+  document.getElementById(
+    "dailyBonusBtn"
+  );
+
+
+if (dailyButton) {
+
+  dailyButton.addEventListener(
     "click",
     claimDailyBonus
   );
+
+}
 
 
 /* =====================================================
@@ -478,8 +1009,9 @@ function init() {
 
   renderHomeTasks();
 
+  renderHistory();
+
 }
 
 
 init();
-```
